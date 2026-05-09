@@ -1,0 +1,88 @@
+﻿@page "/"
+@using System.Diagnostics.Tracing
+@rendermode InteractiveServer
+
+<PageTitle>To-Do List</PageTitle>
+
+<h1>To-Do List (made by Andreas Antoniu)</h1>
+
+@* The User Interface *@
+<div style="margin-bottom: 20px;">
+    <input @bind="newTask" @onkeyup="AddOnEnter" placeholder="What needs to be done?" style="padding: 5px; width: 250px;" />
+    <button @onclick="AddTask" style="padding: 5px 10px;">Add Task</button>
+</div>
+
+@* Pending Tasks Section *@
+<ul style="list-style-type: none; padding: 0; max-width: 400px;">
+    @foreach (var task in tasks.Where(t => !t.IsComplete))
+    {
+        <li style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <input type="checkbox" @bind="task.IsComplete" />
+                <span style="margin-left: 10px;">
+                    @task.Name
+                </span>
+            </div>
+            <button @onclick="() => RemoveTask(task)" style="color: red; cursor: pointer;">Delete</button>
+        </li>
+    }
+</ul>
+
+@* Done Tasks Section *@
+@if (tasks.Any(t => t.IsComplete))
+{
+    <hr style="margin-top: 20px; margin-bottom: 20px; max-width: 400px; margin-left: 0;" />
+    <h3>Done</h3>
+    
+    <ul style="list-style-type: none; padding: 0; max-width: 400px;">
+        @foreach (var task in tasks.Where(t => t.IsComplete))
+        {
+            <li style="margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <input type="checkbox" @bind="task.IsComplete" />
+                    <span style="text-decoration: line-through; margin-left: 10px; color: gray;">
+                        @task.Name
+                    </span>
+                </div>
+                <button @onclick="() => RemoveTask(task)" style="color: red; cursor: pointer;">Delete</button>
+            </li>
+        }
+    </ul>
+}
+
+@* backend functions *@
+@code {
+    public class TodoItem
+    {
+        public string? Name { get; set; }
+        public bool IsComplete { get; set; }
+    }
+    // global variables changed by ui interactions
+    private string newTask = string.Empty;
+    private List<TodoItem> tasks = new();
+
+    // 2. Methods
+    private void AddTask()
+    {
+        if (!string.IsNullOrWhiteSpace(newTask))
+        {
+            tasks.Add(new TodoItem { Name = newTask, IsComplete = false });
+            newTask = string.Empty; // Clear the input field
+        }
+    }
+
+    private void AddOnEnter(KeyboardEventArgs kboardEvent)
+    {
+        if(kboardEvent.Key == "Enter")
+        {
+        AddTask();
+        }
+    }
+
+
+    private void RemoveTask(TodoItem task)
+    {
+        tasks.Remove(task);
+    }
+
+}
